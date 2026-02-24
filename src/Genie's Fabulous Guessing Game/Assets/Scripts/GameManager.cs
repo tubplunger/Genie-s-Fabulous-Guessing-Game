@@ -54,6 +54,7 @@ public class GameManager : MonoBehaviour
 
             case GuessResult.Correct:
                 Debug.Log("Correct! You guessed it in " + attempts + " attempts!");
+                EndGame();
                 break;
         }
 
