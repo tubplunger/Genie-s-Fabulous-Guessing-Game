@@ -2,11 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
     [Header("References")]
     public TMP_InputField inputField;
+    public TMP_Text messageText;
+    public TMP_Text attemptsText;
+    public Button actionButton;
+    public TMP_Text buttonText;
     public GuessEvaluator evaluator;
 
     private int attempts = 0;
@@ -14,59 +19,84 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // Clear field at the start of the game
-        inputField.text = "";
+        inputField.onSubmit.AddListener(delegate { SubmitGuess(); });
+        actionButton.onClick.AddListener(OnButtonPressed);
 
-        Debug.Log("Game has started! Guess a number between 1 and 100.");
-
-        // Listen for enter key submission
-        inputField.onSubmit.AddListener(SubmitGuess);
+        StartGame();
     }
 
-    public void SubmitGuess(string input)
+    void StartGame()
+    {
+        attempts = 0;
+        gameActive = true;
+
+        evaluator.GenerateNumber();
+
+        inputField.text = "";
+        inputField.interactable = true;
+        inputField.ActivateInputField();
+
+        messageText.text = "Game Started! Guess a number between 1 and 100.";
+        attemptsText.text = "Attempts: 0";
+
+        buttonText.text = "Waiting...";
+        actionButton.interactable = false;
+    }
+
+    public void SubmitGuess()
     {
         if (!gameActive)
             return;
 
         int guess;
 
-        // Validate number
-        if (!int.TryParse(input, out guess))
+        if (!int.TryParse(inputField.text, out guess))
         {
-            Debug.Log("Please enter a valid number.");
+            messageText.text = "Please enter a valid number.";
             inputField.text = "";
             return;
         }
 
         attempts++;
+        attemptsText.text = "Attempts: " + attempts;
 
         GuessResult result = evaluator.EvaluateGuess(guess);
 
         switch (result)
         {
             case GuessResult.TooLow:
-                Debug.Log("Too low! Try again.");
+                messageText.text = "Too low! Try again.";
                 break;
 
             case GuessResult.TooHigh:
-                Debug.Log("Too high! Try again.");
+                messageText.text = "Too high! Try again.";
                 break;
 
             case GuessResult.Correct:
-                Debug.Log("Correct! You guessed it in " + attempts + " attempts!");
+                messageText.text = "Correct! You guessed it in " + attempts + " attempts!";
                 EndGame();
                 break;
         }
 
-        // Clear for the next guess
         inputField.text = "";
         inputField.ActivateInputField();
     }
 
-    private void EndGame()
+    void EndGame()
     {
         gameActive = false;
+
         inputField.interactable = false;
-        Debug.Log("Game over. Input Disabled.");
+
+        buttonText.text = "Play Again";
+        actionButton.interactable = true;
+    }
+
+    void OnButtonPressed()
+    {
+        if (!gameActive)
+        {
+            StartGame();
+        }
     }
 }
