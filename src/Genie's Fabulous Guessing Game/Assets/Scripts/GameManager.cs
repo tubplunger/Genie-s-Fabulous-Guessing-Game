@@ -99,4 +99,15 @@ public class GameManager : MonoBehaviour
             StartGame();
         }
     }
+
+    public void QuitGame()
+    {
+        Debug.Log("Quitting Game...");
+
+        #if Unity_Editor
+            UnityEditor.EditorApplication.isPlaying = false;
+        #else
+            Application.Quit();
+        #endif
+    }
 }
